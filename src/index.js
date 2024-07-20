@@ -5,7 +5,16 @@ import connectDB from "./db/connectDB.js";
 dotenv.config({ path: "./env" });
 
 //connect to MongoDB
-connectDB().then().catch();
+connectDB()
+  .then(() => {
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`App is listening on port ${process.env.PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to MongoDB", error);
+    process.exit(1);
+  });
 
 /*
 import express from "express";
