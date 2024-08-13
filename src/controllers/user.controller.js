@@ -89,7 +89,7 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, "User registered Successfully"));
 });
 
-const loginUser = asyncHandler(async () => {
+const loginUser = asyncHandler(async (req, res) => {
   //get user details from frontend.
   //check if user exist or not.--username, email
   //check for password
@@ -97,25 +97,27 @@ const loginUser = asyncHandler(async () => {
   //send cookie.
 
   const { username, email, password } = req.body;
+  // console.log(req.body);
 
-  if (!username || !email)
+  if (!username && !email)
     throw new ApiError(400, "Username or email is required");
 
-  const user = User.findOne({
+  const user = await User.findOne({
     $or: [{ username }, { email }],
   });
   if (!user) throw new ApiError(404, "User does not exist");
 
-  const isPasswordValid = await User.isPasswordCorrect(password);
+  const isPasswordValid = await user.isPasswordCorrect(password);
+
   if (!isPasswordValid) throw new ApiError(401, "Invalid user credentials");
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     user._id
   );
   // console.log(user);
-  const loggedUser = await user
-    .findById(user._id)
-    .select("-password -refreshToken");
+  const loggedUser = await User.findById(user._id).select(
+    "-password -refreshToken"
+  );
   // console.log(loggedUser);
   const options = {
     httpOnly: true,
@@ -134,16 +136,14 @@ const loginUser = asyncHandler(async () => {
     );
 });
 
-const logoutUser = asyncHandler(async () => {
+const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
-      },
+      refreshToken: null,
     },
     { new: true }
-  );``
+  );
   const options = {
     httpOnly: true,
     secure: true,
