@@ -1,7 +1,7 @@
 {
-  "name": "chai-aur-backend",
+  "name": "tube-mate",
   "version": "1.0.0",
-  "description": "a complete backend of a project",
+  "description": "a complete backend of a youtube like simple web app",
   "type": "module",
   "main": "index.js",
   "scripts": {
